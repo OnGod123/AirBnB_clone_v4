@@ -160,3 +160,6 @@ Jennifer Huang - [Github](https://github.com/jhuang10123) / [Twitter](https://tw
 Second part of Airbnb: Joann Vuong
 ## License
 Public Domain. No copy write protection. 
+## my contribution involved building upgrading the datbase to handle other Api endpoint
+this project was updarted by me  and my partner 
+ifejika vincent ikechukwu

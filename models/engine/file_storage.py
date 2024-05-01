@@ -57,6 +57,18 @@ class FileStorage:
                 self.__objects[key] = classes[jo[key]["__class__"]](**jo[key])
         except:
             pass
+    
+    def get(self, cls, id):
+        """Retrieve one object."""
+        key = "{}.{}".format(cls.__name__, id)
+        return self.__objects.get(key, None)
+    
+    def count(self, cls=None):
+        """Count the number of objects in storage."""
+        if cls:
+            return sum(1 for obj in self.__objects.values() if isinstance(obj, cls))
+        else:
+            return len(self.__objects)
 
     def delete(self, obj=None):
         """delete obj from __objects if it’s inside"""

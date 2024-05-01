@@ -68,12 +68,38 @@ test_db_storage.py'])
                             "{:s} method needs a docstring".format(func[0]))
 
 
-class TestFileStorage(unittest.TestCase):
+class TestYourDBStorageClass(unittest.TestCase):
     """Test the FileStorage class"""
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_returns_dict(self):
         """Test that all returns a dictionaty"""
         self.assertIs(type(models.storage.all()), dict)
+    def setUp(self):
+        """Create a mock SQLAlchemy session"""
+        self.mock_session = MagicMock()
+        self.db_storage = YourDBStorageClass(session=self.mock_session)
+
+    def test_count_with_class(self):
+        """Test counting objects for a specific class"""
+        test_class = SomeClass
+        expected_count = 10
+        self.mock_session.query().filter_by().count.return_value = expected_count
+
+        result = self.db_storage.count(test_class)
+
+        self.assertEqual(result, expected_count)
+
+    def test_count_all_objects(self):
+         """Test counting all objects in storage"""
+        expected_count = 100
+        """ Mock count for each subclass"""
+        self.mock_session.query().count.side_effect = [10, 20, 30]
+        expected_result = sum([10, 20, 30])
+
+        result = self.db_storage.count()
+
+        self.assertEqual(result, expected_result)
+
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_no_class(self):
@@ -86,3 +112,22 @@ class TestFileStorage(unittest.TestCase):
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_save(self):
         """Test that save properly saves objects to file.json"""
+     def test_get_existing_object(self):
+        """Test retrieving an existing object from the database"""
+        test_id = 1
+        test_object = MagicMock()
+        self.db_storage.__session.query().filter_by().all.return_value = [test_object]
+
+        result = self.db_storage.get(SomeClass, test_id)
+
+        self.assertEqual(result, test_object)
+
+    def test_get_non_existing_object(self):
+         """Test retrieving a non-existing object from the database"""
+        test_id = 2
+        self.db_storage.__session.query().filter_by().all.return_value = []
+
+        result = self.db_storage.get(SomeClass, test_id)
+
+        self.assertIsNone(result)
+

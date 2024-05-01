@@ -77,8 +77,13 @@ class TestFileStorage(unittest.TestCase):
         new_dict = storage.all()
         self.assertEqual(type(new_dict), dict)
         self.assertIs(new_dict, storage._FileStorage__objects)
-
-    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    
+    def setUp(self):
+        # Initialize FileStorage with a mocked objects dictionary
+        self.file_storage = FileStorage()
+        self.file_storage.__objects = MagicMock()
+        @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    
     def test_new(self):
         """test that new adds an object to the FileStorage.__objects attr"""
         storage = FileStorage()
@@ -93,6 +98,46 @@ class TestFileStorage(unittest.TestCase):
                 test_dict[instance_key] = instance
                 self.assertEqual(test_dict, storage._FileStorage__objects)
         FileStorage._FileStorage__objects = save
+     def test_get_existing_object(self):
+        """Test retrieving an existing object from the file storage """
+        test_id = 1
+        test_object = MagicMock()
+        key = "SomeClass.{}".format(test_id)
+        self.file_storage.__objects.get.return_value = test_object
+
+        result = self.file_storage.get(SomeClass, test_id)
+
+        self.assertEqual(result, test_object)
+
+    def test_get_non_existing_object(self):
+        """ Test retrieving a non-existing object from the file storage """
+        test_id = 2
+        self.file_storage.__objects.get.return_value = None
+
+        result = self.file_storage.get(SomeClass, test_id)
+
+        self.assertIsNone(result)
+     def test_count_with_class(self):
+        """Test counting objects for a specific class"""
+        test_class = SomeClass
+        expected_count = 5
+        """Mocking the objects dictionary with objects of the specified class"""
+        self.file_storage.__objects.values.return_value = [MagicMock() for _ in range(expected_count)]
+
+        result = self.file_storage.count(test_class)
+
+        self.assertEqual(result, expected_count)
+
+    def test_count_all_objects(self):
+        """Test counting all objects in storage"""
+        expected_count = 50
+         """Mocking the length of the objects dictionary"""
+        self.file_storage.__objects.__len__.return_value = expected_count
+
+        result = self.file_storage.count()
+
+        self.assertEqual(result, expected_count)
+
 
     @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_save(self):
